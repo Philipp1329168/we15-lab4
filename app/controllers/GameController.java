@@ -108,7 +108,7 @@ public class GameController extends Controller {
 		} else if(game.isGameOver()) {
 			Logger.info("[" + request().username() + "] Game over... redirect");
 
-			//TODO Highscore posten
+			String uuid = doPublishHighScore(game);
 			return ok(winner.render(game));
 		}			
 		return ok(jeopardy.render(game));
