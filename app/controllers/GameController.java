@@ -19,6 +19,9 @@ import play.db.jpa.Transactional;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import twitter.ITwitterClient;
+import twitter.TwitterStatusMessage;
+import twitter.TwitterCli;
 import views.html.jeopardy;
 import views.html.question;
 import views.html.winner;
@@ -233,5 +236,22 @@ public class GameController extends Controller {
 		}
 		return null;
 
+	}
+
+	private static void  doTwitterStatus(String from, String uuid) {
+
+		if(uuid == null || uuid.isEmpty())
+			return;
+		if(from == null || from.isEmpty())
+			return;
+
+		TwitterStatusMessage twitter = new TwitterStatusMessage(from, uuid, new Date());
+		ITwitterClient client = new TwitterCli();
+		try {
+			client.publishUuid(twitter);
+			Logger.info("Twitter Status Message UUID: " + uuid);
+		} catch (Exception ex) {
+			Logger.error("Twitter Status Message Error", ex);
+		}
 	}
 }
