@@ -1,11 +1,7 @@
 package controllers;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
+import highscore.*;
+import highscore.data.*;
 import models.Category;
 import models.JeopardyDAO;
 import models.JeopardyGame;
@@ -22,6 +18,8 @@ import play.mvc.Security;
 import views.html.jeopardy;
 import views.html.question;
 import views.html.winner;
+
+import java.util.*;
 
 @Security.Authenticated(Secured.class)
 public class GameController extends Controller {
@@ -160,5 +158,71 @@ public class GameController extends Controller {
 		
 		Logger.info("[" + request().username() + "] Game over.");		
 		return ok(winner.render(game));
+	}
+
+	private static String doPublishHighScore(JeopardyGame game) {
+
+		PublishHighScoreService hsService = new PublishHighScoreService();
+		PublishHighScoreEndpoint hsEndpoint = hsService.getPublishHighScorePort();
+		HighScoreRequestType hsRequestType = new HighScoreRequestType();
+		hsRequestType.setUserKey("3ke93-gue34-dkeu9");
+
+		highscore.data.UserType winner = new highscore.data.UserType();
+		highscore.data.UserType loser = new highscore.data.UserType();
+
+		JeopardyUser jeopardyWinner = game.getWinner().getUser();
+
+		winner.setFirstName(jeopardyWinner.getFirstName());
+		winner.setLastName(jeopardyWinner.getLastName());
+		winner.setPassword(jeopardyWinner.getPassword());
+		/*winner.setPoints(jeopardyWinner.g);
+
+
+
+
+		for(QuizUser quizUser : game.getPlayers())
+		{
+			highscore.quiz.Quiz.Users.User user = new highscore.quiz.Quiz.Users.User();
+
+			if(game.getWinner() == quizUser)
+				user.setName("winner");
+			else
+				user.setName("loser");
+
+			String strGender = quizUser.getGender().toString();
+
+			user.setGender(strGender);
+			user.setPassword("");
+			user.setFirstname(quizUser.getFirstName());
+			user.setLastname(quizUser.getLastName());
+
+			GregorianCalendar c = new GregorianCalendar();
+			c.setTime(quizUser.getBirthDate());
+			XMLGregorianCalendar xmlc;
+			try {
+				xmlc = DatatypeFactory.newInstance().newXMLGregorianCalendar();
+				xmlc.setYear(c.get(Calendar.YEAR));
+				xmlc.setMonth(c.get(Calendar.MONTH) + 1);
+				xmlc.setDay(c.get(Calendar.DAY_OF_MONTH));
+				user.setBirthdate(xmlc);
+			} catch (DatatypeConfigurationException ex) {
+				Logger.error("DatatypeConfigurationException",ex);
+			}
+
+			listUsers.add(user);
+		}
+
+		highscore.quiz.Quiz quiz = new highscore.quiz.Quiz();
+
+		quiz.setUsers(users);
+		hsRequestType.setQuiz(quiz);
+		try {
+			String hsUUID = hsEndpoint.publishHighScore(hsRequestType);
+			Logger.info("Publish Highscore UUID: " + hsUUID);
+			return hsUUID;
+		} catch (Failure ex) {
+			Logger.error("Publish Highscore Error", ex);
+		}*/
+		return null;
 	}
 }
