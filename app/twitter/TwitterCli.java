@@ -22,5 +22,8 @@ public class TwitterCli implements ITwitterClient {
         cb.setOAuthAccessTokenSecret(this.accessTokenSecret);
         Twitter twitter = new TwitterFactory(cb.build()).getInstance();
         twitter.updateStatus(message.getTwitterPublicationString());
+
+
+        System.out.println("Hallo");
     }
 }
