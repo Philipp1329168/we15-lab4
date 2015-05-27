@@ -1,7 +1,11 @@
 package controllers;
 
-import highscore.*;
-import highscore.data.*;
+import highscore.Failure;
+import highscore.PublishHighScoreEndpoint;
+import highscore.PublishHighScoreService;
+import highscore.data.GenderType;
+import highscore.data.HighScoreRequestType;
+import highscore.data.UserDataType;
 import models.Category;
 import models.JeopardyDAO;
 import models.JeopardyGame;
@@ -19,6 +23,9 @@ import views.html.jeopardy;
 import views.html.question;
 import views.html.winner;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.*;
 
 @Security.Authenticated(Secured.class)
@@ -171,58 +178,60 @@ public class GameController extends Controller {
 		highscore.data.UserType loser = new highscore.data.UserType();
 
 		JeopardyUser jeopardyWinner = game.getWinner().getUser();
+		JeopardyUser jeopardyLoser = game.getLoser().getUser();
 
 		winner.setFirstName(jeopardyWinner.getFirstName());
 		winner.setLastName(jeopardyWinner.getLastName());
 		winner.setPassword(jeopardyWinner.getPassword());
-		/*winner.setPoints(jeopardyWinner.g);
+		winner.setPoints(game.getWinner().getProfit());
+		if(jeopardyWinner.getGender() == JeopardyUser.Gender.male)
+			winner.setGender(GenderType.MALE);
+		else
+			winner.setGender(GenderType.FEMALE);
 
+		loser.setFirstName(jeopardyLoser.getFirstName());
+		loser.setLastName(jeopardyLoser.getLastName());
+		loser.setPassword(jeopardyLoser.getPassword());
+		loser.setPoints(game.getLoser().getProfit());
+		if(jeopardyLoser.getGender() == JeopardyUser.Gender.male)
+			loser.setGender(GenderType.MALE);
+		else
+			loser.setGender(GenderType.FEMALE);
 
+		GregorianCalendar date = new GregorianCalendar();
+		XMLGregorianCalendar xmlc;
+		try {
+			xmlc = DatatypeFactory.newInstance().newXMLGregorianCalendar();
 
+			date.setTime(jeopardyWinner.getBirthDate());
+			xmlc.setYear(date.get(Calendar.YEAR));
+			xmlc.setMonth(date.get(Calendar.MONTH) + 1);
+			xmlc.setDay(date.get(Calendar.DAY_OF_MONTH));
+			winner.setBirthDate(xmlc);
 
-		for(QuizUser quizUser : game.getPlayers())
-		{
-			highscore.quiz.Quiz.Users.User user = new highscore.quiz.Quiz.Users.User();
+			date.setTime(jeopardyLoser.getBirthDate());
+			xmlc.setYear(date.get(Calendar.YEAR));
+			xmlc.setMonth(date.get(Calendar.MONTH) + 1);
+			xmlc.setDay(date.get(Calendar.DAY_OF_MONTH));
+			loser.setBirthDate(xmlc);
 
-			if(game.getWinner() == quizUser)
-				user.setName("winner");
-			else
-				user.setName("loser");
-
-			String strGender = quizUser.getGender().toString();
-
-			user.setGender(strGender);
-			user.setPassword("");
-			user.setFirstname(quizUser.getFirstName());
-			user.setLastname(quizUser.getLastName());
-
-			GregorianCalendar c = new GregorianCalendar();
-			c.setTime(quizUser.getBirthDate());
-			XMLGregorianCalendar xmlc;
-			try {
-				xmlc = DatatypeFactory.newInstance().newXMLGregorianCalendar();
-				xmlc.setYear(c.get(Calendar.YEAR));
-				xmlc.setMonth(c.get(Calendar.MONTH) + 1);
-				xmlc.setDay(c.get(Calendar.DAY_OF_MONTH));
-				user.setBirthdate(xmlc);
-			} catch (DatatypeConfigurationException ex) {
-				Logger.error("DatatypeConfigurationException",ex);
-			}
-
-			listUsers.add(user);
+		} catch (DatatypeConfigurationException ex) {
+			Logger.error("DatatypeConfigurationException",ex);
 		}
 
-		highscore.quiz.Quiz quiz = new highscore.quiz.Quiz();
+		UserDataType users = new UserDataType();
+		users.setWinner(winner);
+		users.setLoser(loser);
 
-		quiz.setUsers(users);
-		hsRequestType.setQuiz(quiz);
+		hsRequestType.setUserData(users);
 		try {
 			String hsUUID = hsEndpoint.publishHighScore(hsRequestType);
 			Logger.info("Publish Highscore UUID: " + hsUUID);
 			return hsUUID;
 		} catch (Failure ex) {
 			Logger.error("Publish Highscore Error", ex);
-		}*/
+		}
 		return null;
+
 	}
 }
