@@ -19,11 +19,6 @@ public class JeopardyUser extends BaseEntity {
 	public enum Gender {
 		male, female
 	}
-  
-  //@TODO - as soon as the id attribute has been introduced to the base entity - remove the ID
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
 
 	@Constraints.Required
 	@Constraints.MinLength(value = 4, message = "error.userName")

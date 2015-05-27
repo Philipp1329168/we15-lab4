@@ -1,9 +1,14 @@
 package models;
 
 
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.ManyToOne;
+
 /**
  * Represents an answer which is stored in the DB
  */
+@Entity
 public class Answer extends BaseEntity {
 
 
@@ -12,6 +17,7 @@ public class Answer extends BaseEntity {
 
     private Boolean correctAnswer;
 
+    @ManyToOne(fetch = FetchType.LAZY)
     private Question question;
 
     /**
