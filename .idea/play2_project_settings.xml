@@ -7,8 +7,8 @@
           <value>
             <ProjectSettingsEntry>
               <option name="version" value="2.3.8" />
-              <option name="sourceDir" value="D:\Dokumente\WEB\Exercise4\we-lab4\conf" />
-              <option name="confDir" value="D:\Dokumente\WEB\Exercise4\we-lab4\app" />
+              <option name="sourceDir" value="C:\Users\Matthias\Desktop\Studium\WebWorkspace\we15-lab4\conf" />
+              <option name="confDir" value="C:\Users\Matthias\Desktop\Studium\WebWorkspace\we15-lab4\app" />
               <option name="templateImports">
                 <list>
                   <option value="play.api.templates.PlayMagic._" />
@@ -33,7 +33,7 @@
                   <option value="play.libs.F" />
                 </list>
               </option>
-              <option name="uri" value="D:\Dokumente\WEB\Exercise4\we-lab4" />
+              <option name="uri" value="C:\Users\Matthias\Desktop\Studium\WebWorkspace\we15-lab4" />
             </ProjectSettingsEntry>
           </value>
         </entry>
