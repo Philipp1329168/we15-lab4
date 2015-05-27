@@ -109,6 +109,7 @@ public class GameController extends Controller {
 			Logger.info("[" + request().username() + "] Game over... redirect");
 
 			String uuid = doPublishHighScore(game);
+			doTwitterStatus(game.getWinner().getUser().getName(), uuid);
 			return ok(winner.render(game));
 		}			
 		return ok(jeopardy.render(game));
