@@ -33,6 +33,7 @@ import javax.xml.bind.annotation.XmlType;
     "winner"
 })
 public class UserDataType {
+    //
 
     @XmlElement(name = "Loser", required = true)
     protected UserType loser;
