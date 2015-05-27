@@ -1,5 +1,9 @@
 package twitter;
 
+import twitter4j.Twitter;
+import twitter4j.TwitterFactory;
+import twitter4j.conf.ConfigurationBuilder;
+
 /**
  * Created by root on 27/05/15.
  */
@@ -11,7 +15,12 @@ public class TwitterCli implements ITwitterClient {
 
     @Override
     public void publishUuid(TwitterStatusMessage message) throws Exception {
-
-
+        ConfigurationBuilder cb = new ConfigurationBuilder();
+        cb.setOAuthConsumerKey(this.consumerKey);
+        cb.setOAuthConsumerSecret(this.consumerSecret);
+        cb.setOAuthAccessToken(this.accessToken);
+        cb.setOAuthAccessTokenSecret(this.accessTokenSecret);
+        Twitter twitter = new TwitterFactory(cb.build()).getInstance();
+        twitter.updateStatus(message.getTwitterPublicationString());
     }
 }
