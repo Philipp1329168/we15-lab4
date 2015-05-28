@@ -1,26 +1,29 @@
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Locale;
-
 import at.ac.tuwien.big.we.dbpedia.api.DBPediaService;
 import at.ac.tuwien.big.we.dbpedia.api.SelectQueryBuilder;
 import at.ac.tuwien.big.we.dbpedia.vocabulary.DBPedia;
 import at.ac.tuwien.big.we.dbpedia.vocabulary.DBPediaOWL;
+import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.sparql.vocabulary.FOAF;
+import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.RDFS;
+import data.JSONDataInserter;
+import models.Answer;
 import models.Category;
+import models.JeopardyDAO;
+import models.Question;
 import play.Application;
 import play.GlobalSettings;
 import play.Logger;
 import play.Play;
 import play.db.jpa.JPA;
 import play.libs.F.Function0;
-import data.JSONDataInserter;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.sparql.vocabulary.FOAF;
-import com.hp.hpl.jena.vocabulary.RDF;
-import com.hp.hpl.jena.vocabulary.RDFS;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 
 public class Global extends GlobalSettings {
@@ -40,6 +43,11 @@ public class Global extends GlobalSettings {
 		// Check if DBpedia is available
 		if(!DBPediaService.isAvailable())
 			return;
+
+		Category category = new Category();
+		category.setNameDE("Filme");
+		category.setNameEN("Films");
+
 // Resource Tim Burton is available at http://dbpedia.org/resource/Tim_Burton
 // Load all statements as we need to get the name later
 		Resource director = DBPediaService.loadStatements(DBPedia.createResource("Tim_Burton"));
@@ -77,6 +85,38 @@ public class Global extends GlobalSettings {
 		List<String> germanNoTimBurtonMovieNames =
 				DBPediaService.getResourceNames(noTimBurtonMovies, Locale.GERMAN);
 
+		Question question = new Question();
+		question.setTextDE("Filme mit Tim Burton");
+		question.setTextEN("Films with Tim Burton");
+		question.setCategory(category);
+		question.setValue(50);
+
+		List<Answer> listAnswer = new ArrayList<>();
+		//add wrong answers
+		for(int i=0;i<germanNoTimBurtonMovieNames.size();i++) {
+			Answer answer = new Answer();
+			answer.setCorrectAnswer(false);
+			answer.setTextDE(germanNoTimBurtonMovieNames.get(i));
+			answer.setTextEN(englishNoTimBurtonMovieNames.get(i));
+			answer.setQuestion(question);
+			JeopardyDAO.INSTANCE.persist(answer);
+		}
+		//add correct answers
+		for(int i=0;i<germanTimBurtonMovieNames.size();i++) {
+			Answer answer = new Answer();
+			answer.setCorrectAnswer(true);
+			answer.setTextDE(germanNoTimBurtonMovieNames.get(i));
+			answer.setTextEN(englishNoTimBurtonMovieNames.get(i));
+			answer.setQuestion(question);
+			JeopardyDAO.INSTANCE.persist(answer);
+		}
+
+		question.setAnswers(listAnswer);
+		JeopardyDAO.INSTANCE.persist(question);
+		JeopardyDAO.INSTANCE.persist(category);
+
+		Logger.info(" category from DBPedia '" + category.getNameDE() + "' inserted.");
+
 		for (String string : englishNoTimBurtonMovieNames) {
 			System.out.println(string);
 		}
@@ -84,6 +124,7 @@ public class Global extends GlobalSettings {
 		for (String string : germanNoTimBurtonMovieNames) {
 			System.out.println(string);
 		}
+
 
 	}
 	
