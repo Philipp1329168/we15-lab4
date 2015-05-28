@@ -5,7 +5,6 @@ import highscore.PublishHighScoreEndpoint;
 import highscore.PublishHighScoreService;
 import highscore.data.GenderType;
 import highscore.data.HighScoreRequestType;
-import highscore.data.UserDataType;
 import models.Category;
 import models.JeopardyDAO;
 import models.JeopardyGame;
@@ -20,8 +19,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import twitter.ITwitterClient;
-import twitter.TwitterStatusMessage;
 import twitter.TwitterCli;
+import twitter.TwitterStatusMessage;
 import views.html.jeopardy;
 import views.html.question;
 import views.html.winner;
@@ -108,8 +107,6 @@ public class GameController extends Controller {
 		} else if(game.isGameOver()) {
 			Logger.info("[" + request().username() + "] Game over... redirect");
 
-			String uuid = doPublishHighScore(game);
-			doTwitterStatus(game.getWinner().getUser().getName(), uuid);
 			return ok(winner.render(game));
 		}			
 		return ok(jeopardy.render(game));
@@ -167,12 +164,14 @@ public class GameController extends Controller {
 		if(game == null || !game.isGameOver())
 			return redirect(routes.GameController.playGame());
 		
-		Logger.info("[" + request().username() + "] Game over.");		
+		Logger.info("[" + request().username() + "] Game over.");
+		String uuid = doPublishHighScore(game);
+		doTwitterStatus(game.getWinner().getUser().getName(), uuid);
+
 		return ok(winner.render(game));
 	}
 
 	private static String doPublishHighScore(JeopardyGame game) {
-
 		PublishHighScoreService hsService = new PublishHighScoreService();
 		PublishHighScoreEndpoint hsEndpoint = hsService.getPublishHighScorePort();
 		HighScoreRequestType hsRequestType = new HighScoreRequestType();
@@ -186,7 +185,7 @@ public class GameController extends Controller {
 
 		winner.setFirstName(jeopardyWinner.getFirstName());
 		winner.setLastName(jeopardyWinner.getLastName());
-		winner.setPassword(jeopardyWinner.getPassword());
+		winner.setPassword("");
 		winner.setPoints(game.getWinner().getProfit());
 		if(jeopardyWinner.getGender() == JeopardyUser.Gender.male)
 			winner.setGender(GenderType.MALE);
@@ -195,7 +194,7 @@ public class GameController extends Controller {
 
 		loser.setFirstName(jeopardyLoser.getFirstName());
 		loser.setLastName(jeopardyLoser.getLastName());
-		loser.setPassword(jeopardyLoser.getPassword());
+		loser.setPassword("");
 		loser.setPoints(game.getLoser().getProfit());
 		if(jeopardyLoser.getGender() == JeopardyUser.Gender.male)
 			loser.setGender(GenderType.MALE);
@@ -223,17 +222,19 @@ public class GameController extends Controller {
 			Logger.error("DatatypeConfigurationException",ex);
 		}
 
-		UserDataType users = new UserDataType();
+		highscore.data.UserDataType users = new highscore.data.UserDataType();
 		users.setWinner(winner);
 		users.setLoser(loser);
 
 		hsRequestType.setUserData(users);
+
 		try {
 			String hsUUID = hsEndpoint.publishHighScore(hsRequestType);
 			Logger.info("Publish Highscore UUID: " + hsUUID);
 			return hsUUID;
 		} catch (Failure ex) {
 			Logger.error("Publish Highscore Error", ex);
+			ex.printStackTrace();
 		}
 		return null;
 
