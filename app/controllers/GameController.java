@@ -111,7 +111,7 @@ public class GameController extends Controller {
 
 			try {
 				uuid = doPublishHighScore(game);
-				doTwitterStatus(game.getWinner().getUser().getName(), uuid);
+				doTwitterPost(game.getWinner().getUser().getName(), uuid);
 			} catch (Exception e) {
 				uuid = null;
 			}
@@ -179,7 +179,7 @@ public class GameController extends Controller {
 
 		try {
 			uuid = doPublishHighScore(game);
-			doTwitterStatus(game.getWinner().getUser().getName(), uuid);
+			doTwitterPost(game.getWinner().getUser().getName(), uuid);
 		} catch (Exception e) {
 
 			uuid = null;
@@ -257,7 +257,7 @@ public class GameController extends Controller {
 
 	}
 
-	private static void  doTwitterStatus(String from, String uuid) {
+	private static void  doTwitterPost(String from, String uuid) {
 
 		if(uuid == null || uuid.isEmpty())
 			return;
