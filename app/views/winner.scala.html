@@ -1,4 +1,4 @@
-@(game: models.JeopardyGame)
+@(game: models.JeopardyGame, uuid: String)
 @import play.i18n._
 @import helper._
 
@@ -8,6 +8,13 @@
 		@gameInfo(game.getLeader(), game.getSecond(), game.getMaxQuestions(), game.isHumanPlayer(game.getLeader().getUser()))
          <section id="newgame" aria-labelledby="newgameheading">
              <h2 id="newgameheading" class="accessibility">@Messages.get("quizover.newgame")</h2>
+             @if(uuid != null){
+                 <h2 id="pulishUUIDvalid">UUID @uuid @Messages.get("winner.UUIDvalid") </h2>
+             }
+             @if(uuid == null){
+                <h2 id="pulishUUIDinvalid">UUID @Messages.get("winner.UUIDinvalid") </h2>
+             }
+             <br/>
              @helper.form(routes.GameController.newGame()) {
              <input name="newgame" id="new_game" class="orangelink contentlink" type="submit" value="@Messages.get("quizover.newgame")" />
              }

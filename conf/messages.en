@@ -98,3 +98,6 @@ jeopardy.chosen2=
 jeopardy.for=for
 jeopardy.choose=choose
 jeopardy.answer=answer
+
+winner.UUIDvalid=posted on twitter
+winner.UUIDinvalid=not posted on twitter

@@ -107,7 +107,16 @@ public class GameController extends Controller {
 		} else if(game.isGameOver()) {
 			Logger.info("[" + request().username() + "] Game over... redirect");
 
-			return ok(winner.render(game));
+			String uuid = null;
+
+			try {
+				uuid = doPublishHighScore(game);
+				doTwitterStatus(game.getWinner().getUser().getName(), uuid);
+			} catch (Exception e) {
+				uuid = null;
+			}
+
+			return ok(winner.render(game, uuid));
 		}			
 		return ok(jeopardy.render(game));
 	}
@@ -165,13 +174,21 @@ public class GameController extends Controller {
 			return redirect(routes.GameController.playGame());
 		
 		Logger.info("[" + request().username() + "] Game over.");
-		String uuid = doPublishHighScore(game);
-		doTwitterStatus(game.getWinner().getUser().getName(), uuid);
 
-		return ok(winner.render(game));
+		String uuid = "";
+
+		try {
+			uuid = doPublishHighScore(game);
+			doTwitterStatus(game.getWinner().getUser().getName(), uuid);
+		} catch (Exception e) {
+
+			uuid = null;
+		}
+
+		return ok(winner.render(game, uuid));
 	}
 
-	private static String doPublishHighScore(JeopardyGame game) {
+	private static String doPublishHighScore(JeopardyGame game) throws Exception {
 		PublishHighScoreService hsService = new PublishHighScoreService();
 		PublishHighScoreEndpoint hsEndpoint = hsService.getPublishHighScorePort();
 		HighScoreRequestType hsRequestType = new HighScoreRequestType();

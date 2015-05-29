@@ -96,3 +96,6 @@ jeopardy.chosen2=gewählt
 jeopardy.for=für
 jeopardy.choose=wählen
 jeopardy.answer=antworten
+
+winner.UUIDvalid=wurde auf Twitter veröffentlicht
+winner.UUIDinvalid=wurde nicht auf Twitter veröffentlicht
