@@ -24,6 +24,8 @@ public class JeopardyGame {
 	private static final int NUM_QUESTIONS = 5;
 
 	private Random random = new Random();
+
+	private String uuid;
 	
 	private List<Category> categories;
 	private Player human, marvin; // marvin == computer opponent	
@@ -212,6 +214,14 @@ public class JeopardyGame {
 
 	public boolean hasBeenChosen(Question question) {
 		return chosenQuestions.contains(question);
+	}
+
+	public void setTwitterPost(String uuid){
+		this.uuid = uuid;
+	}
+
+	public String getTwitterPost(){
+		return uuid;
 	}
 	
 }

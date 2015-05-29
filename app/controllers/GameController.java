@@ -166,7 +166,12 @@ public class GameController extends Controller {
 		
 		Logger.info("[" + request().username() + "] Game over.");
 		String uuid = doPublishHighScore(game);
-		doTwitterStatus(game.getWinner().getUser().getName(), uuid);
+		if(doTwitterStatus(game.getWinner().getUser().getName(), uuid))
+			game.setTwitterPost(uuid);
+		else
+			game.setTwitterPost("");
+
+		System.out.println(game.getTwitterPost());
 
 		return ok(winner.render(game));
 	}
@@ -240,20 +245,22 @@ public class GameController extends Controller {
 
 	}
 
-	private static void  doTwitterStatus(String from, String uuid) {
+	private static boolean  doTwitterStatus(String from, String uuid) {
 
 		if(uuid == null || uuid.isEmpty())
-			return;
+			return false;
 		if(from == null || from.isEmpty())
-			return;
+			return false;
 
 		TwitterStatusMessage twitter = new TwitterStatusMessage(from, uuid, new Date());
 		ITwitterClient client = new TwitterCli();
 		try {
 			client.publishUuid(twitter);
 			Logger.info("Twitter Status Message UUID: " + uuid);
+			return true;
 		} catch (Exception ex) {
 			Logger.error("Twitter Status Message Error", ex);
+			return false;
 		}
 	}
 }
