@@ -171,8 +171,6 @@ public class GameController extends Controller {
 		else
 			game.setTwitterPost(null);
 
-		System.out.println(game.getTwitterPost());
-
 		return ok(winner.render(game));
 	}
 
