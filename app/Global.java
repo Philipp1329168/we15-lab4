@@ -40,7 +40,6 @@ public class Global extends GlobalSettings {
 	@play.db.jpa.Transactional
 	public static void insertOpenLinkedData()  {
 
-		// Check if DBpedia is available
 		if(!DBPediaService.isAvailable())
 			return;
 
@@ -48,84 +47,62 @@ public class Global extends GlobalSettings {
 		category.setNameDE("Filme");
 		category.setNameEN("Films");
 
-// Resource Tim Burton is available at http://dbpedia.org/resource/Tim_Burton
-// Load all statements as we need to get the name later
-		Resource director = DBPediaService.loadStatements(DBPedia.createResource("Tim_Burton"));
-// Resource Johnny Depp is available at http://dbpedia.org/resource/Johnny_Depp
-// Load all statements as we need to get the name later
-		Resource actor = DBPediaService.loadStatements(DBPedia.createResource("Johnny_Depp"));
-// retrieve english and german names, might be used for question text
-		String englishDirectorName = DBPediaService.getResourceName(director, Locale.ENGLISH);
-		String germanDirectorName = DBPediaService.getResourceName(director, Locale.GERMAN);
-		String englishActorName = DBPediaService.getResourceName(actor, Locale.ENGLISH);
-		String germanActorName = DBPediaService.getResourceName(actor, Locale.GERMAN);
-// build SPARQL-query
-		SelectQueryBuilder movieQuery = DBPediaService.createQueryBuilder()
-				.setLimit(5) // at most five statements
-				.addWhereClause(RDF.type, DBPediaOWL.Film)
-				.addPredicateExistsClause(FOAF.name)
-				.addWhereClause(DBPediaOWL.director, director)
-				.addFilterClause(RDFS.label, Locale.GERMAN)
-				.addFilterClause(RDFS.label, Locale.ENGLISH);
-// retrieve data from dbpedia
-		Model timBurtonMovies = DBPediaService.loadStatements(movieQuery.toQueryString());
-// get english and german movie names, e.g., for right choices
-		List<String> englishTimBurtonMovieNames =
-				DBPediaService.getResourceNames(timBurtonMovies, Locale.ENGLISH);
-		List<String> germanTimBurtonMovieNames =
-				DBPediaService.getResourceNames(timBurtonMovies, Locale.GERMAN);
-// alter query to get movies without tim burton
-		movieQuery.removeWhereClause(DBPediaOWL.director, director);
-		movieQuery.addMinusClause(DBPediaOWL.director, director);
-// retrieve data from dbpedia
-		Model noTimBurtonMovies = DBPediaService.loadStatements(movieQuery.toQueryString());
-// get english and german movie names, e.g., for wrong choices
-		List<String> englishNoTimBurtonMovieNames =
-				DBPediaService.getResourceNames(noTimBurtonMovies, Locale.ENGLISH);
-		List<String> germanNoTimBurtonMovieNames =
-				DBPediaService.getResourceNames(noTimBurtonMovies, Locale.GERMAN);
+		ArrayList<String> persons = new ArrayList<>();
+		persons.add("Tom_Cruise");
+		persons.add("Leonardo_DiCaprio");
+		persons.add("Megan_Fox");
+		persons.add("Brad_Pitt");
+		persons.add("Mila_Kunis");
 
-		Question question = new Question();
-		question.setTextDE("Filme mit Tim Burton");
-		question.setTextEN("Films with Tim Burton");
-		question.setCategory(category);
-		question.setValue(50);
+		for(String person : persons) {
+			Resource actor = DBPediaService.loadStatements(DBPedia.createResource(person));
 
-		List<Answer> listAnswer = new ArrayList<>();
-		//add wrong answers
-		for(int i=0;i<germanNoTimBurtonMovieNames.size();i++) {
-			Answer answer = new Answer();
-			answer.setCorrectAnswer(false);
-			answer.setTextDE(germanNoTimBurtonMovieNames.get(i));
-			answer.setTextEN(englishNoTimBurtonMovieNames.get(i));
-			answer.setQuestion(question);
-			JeopardyDAO.INSTANCE.persist(answer);
+			SelectQueryBuilder movieQuery = DBPediaService.createQueryBuilder()
+					.setLimit(5)
+					.addWhereClause(RDF.type, DBPediaOWL.Film)
+					.addPredicateExistsClause(FOAF.name)
+					.addPredicateExistsClause(RDFS.label)
+					.addWhereClause(DBPediaOWL.starring, actor)
+					.addFilterClause(RDFS.label, Locale.ENGLISH)
+					.addFilterClause(RDFS.label, Locale.GERMAN);
+
+			Model actorMovies = DBPediaService.loadStatements(movieQuery.toQueryString());
+			List<String> englishActorMovieNames = DBPediaService.getResourceNames(actorMovies, Locale.ENGLISH);
+			List<String> germanActorMovieNames = DBPediaService.getResourceNames(actorMovies, Locale.GERMAN);
+
+			movieQuery.removeWhereClause(DBPediaOWL.starring, actor);
+			movieQuery.addMinusClause(DBPediaOWL.starring, actor);
+			movieQuery.setLimit(100);
+
+			Model noActorMovies = DBPediaService.loadStatements(movieQuery.toQueryString());
+			List<String> englishNoActorMovieNames = DBPediaService.getResourceNames(noActorMovies, Locale.ENGLISH);
+			List<String> germanNoActorMovieNames = DBPediaService.getResourceNames(noActorMovies, Locale.GERMAN);
+
+			Question q = new Question();
+			q.setTextDE("In welchem Filmen ist" + DBPediaService.getResourceName(actor,Locale.GERMAN ) + " ein Hauptdarsteller");
+			q.setTextEN("In which films is " + DBPediaService.getResourceName(actor,Locale.ENGLISH ) + " a leading actor");
+
+			int right = (int) (Math.random() * 3) + 1;
+			for (int i = 0; i < right; i++) {
+				Answer a = new Answer();
+				a.setTextDE(germanActorMovieNames.get(i));
+				a.setTextEN(englishActorMovieNames.get(i));
+				q.addRightAnswer(a);
+			}
+			for (int i = right; i < 6; i++) {
+				Answer a = new Answer();
+				int random = (int) (Math.random() * 99);
+				a.setTextDE(germanNoActorMovieNames.get(random));
+				a.setTextEN(englishNoActorMovieNames.get(random));
+				q.addWrongAnswer(a);
+			}
+			q.setCategory(category);
+			q.setValue(category.getQuestions().size()*10 + 10);
+
+			JeopardyDAO.INSTANCE.persist(q);
+			category.addQuestion(q);
 		}
-		//add correct answers
-		for(int i=0;i<germanTimBurtonMovieNames.size();i++) {
-			Answer answer = new Answer();
-			answer.setCorrectAnswer(true);
-			answer.setTextDE(germanNoTimBurtonMovieNames.get(i));
-			answer.setTextEN(englishNoTimBurtonMovieNames.get(i));
-			answer.setQuestion(question);
-			JeopardyDAO.INSTANCE.persist(answer);
-		}
-
-		question.setAnswers(listAnswer);
-		JeopardyDAO.INSTANCE.persist(question);
 		JeopardyDAO.INSTANCE.persist(category);
-
-		Logger.info(" category from DBPedia '" + category.getNameDE() + "' inserted.");
-
-		for (String string : englishNoTimBurtonMovieNames) {
-			System.out.println(string);
-		}
-
-		for (String string : germanNoTimBurtonMovieNames) {
-			System.out.println(string);
-		}
-
-
 	}
 	
 	@play.db.jpa.Transactional
