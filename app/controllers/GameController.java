@@ -169,7 +169,7 @@ public class GameController extends Controller {
 		if(doTwitterStatus(game.getWinner().getUser().getName(), uuid))
 			game.setTwitterPost(uuid);
 		else
-			game.setTwitterPost("");
+			game.setTwitterPost(null);
 
 		System.out.println(game.getTwitterPost());
 
